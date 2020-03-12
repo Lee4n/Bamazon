@@ -11,15 +11,15 @@ var connection = mysql.createConnection({
   port: 3306,
 
   // Your username
-  user: "root",
+  user: "Lee",
 
   // Your password
-  password: "",
+  password: "corsair098",
   database: "bamazon"
 });
 
 // Creates the connection with the server and loads the product data upon a successful connection
-connection.connect(function(err) {
+connection.connect(function (err) {
   if (err) {
     console.error("error connecting: " + err.stack);
   }
@@ -29,7 +29,7 @@ connection.connect(function(err) {
 // Function to load the products table from the database and print results to the console
 function loadProducts() {
   // Selects all of the data from the MySQL products table
-  connection.query("SELECT * FROM products", function(err, res) {
+  connection.query("SELECT * FROM products", function (err, res) {
     if (err) throw err;
 
     // Draw the table in the terminal using the response
@@ -43,22 +43,42 @@ function loadProducts() {
 // Prompt the customer for a product ID
 function promptCustomerForItem(inventory) {
   // Prompts user for what they would like to purchase
- 
-}
+  inquirer
+    .prompt({
+      name: 'item',
+      type: 'number',
+      message: 'What would you like to purchase?'
+    })
+    .then(function (answer) {
+      console.log(answer.item)
+      item = answer.item
+      connection.query(
+        "SELECT * FROM products WHERE ?",
+        {
+          item_id: item
+        },
+        function (err, res) {
+          if (err) throw err;
+          console.log('this works')
+        }
+      )
+    });
+};
 
 // Prompt the customer for a product quantity
 function promptCustomerForQuantity(product) {
-}
+
+};
 
 // Purchase the desired quantity of the desired item
 function makePurchase(product, quantity) {
-  
-}
+
+};
 
 // Check to see if the product the user chose exists in the inventory
 function checkInventory(choiceId, inventory) {
- 
-}
+
+};
 
 // Check to see if the user wants to quit the program
 function checkIfShouldExit(choice) {
@@ -66,5 +86,5 @@ function checkIfShouldExit(choice) {
     // Log a message and exit the current node process
     console.log("Goodbye!");
     process.exit(0);
-  }
-}
+  };
+};
