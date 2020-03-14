@@ -46,65 +46,70 @@ function promptCustomerForItem(inventory) {
   inquirer
     .prompt({
       name: 'item',
-      type: 'number',
+      type: 'input',
       message: 'Please enter the ID number of the product you would like to purchase.\n======================================================================'
     })
     .then(function (answer) {
-      var productId = answer.item;
+      var productId = parseInt(answer.item);
+      checkIfShouldExit(answer.item);
       checkInventory(productId, inventory);
     });
 };
 
 // Prompt the customer for a product quantity
 function promptCustomerForQuantity(product) {
-  prodObject = product[0];
   inquirer
     .prompt({
       name: 'quantity',
-      type: 'number',
+      type: 'input',
       message: 'How many would you like to purchase?\n======================================'
     })
     .then(function (answer) {
-      var quantity = answer.quantity;
-      if (quantity > prodObject.stock_quantity) {
-        console.log(`We apologize for any inconvenience, as there is ${prodObject.stock_quantity} left in stock.`)
-        promptCustomerForQuantity();
+      var quantity = parseInt(answer.quantity);
+      checkIfShouldExit(answer.quantity);
+      if (quantity > product.stock_quantity) {
+        console.log(`We apologize for any inconvenience, as there is ${product.stock_quantity} left in stock.`)
+        promptCustomerForItem(product);
       } else {
-        makePurchase(prodObject, quantity);
+        makePurchase(product, quantity);
       }
     })
 };
 
 // Purchase the desired quantity of the desired item
 function makePurchase(product, quantity) {
-  console.log("MADE PURCHASE")
-  console.log(product)
   connection.query(`UPDATE products
-    SET stock_quantity = stock_quantity - ${quantity} 
-    WHERE item_id = ${product[0].item_id}`)
-
+  SET stock_quantity = stock_quantity - ${quantity} 
+  WHERE item_id = ${product.item_id}`)
+  console.log(`You purchased ${quantity} of ${product.product_name}.`)
+  loadProducts();
 };
 
 // Check to see if the product the user chose exists in the inventory
 function checkInventory(choiceId, inventory) {
-
-  inventory.forEach(product => {
-    console.log(product)
-    if (product.item_id === choiceId) {
-      console.log(`You have selected Item ID ${product.item_id}: ${product.product_name}.`)
-      promptCustomerForQuantity();
-    } else {
-      console.log("Please enter a valid item ID.")
-      promptCustomerForItem(inventory);
+  var product;
+  inventory.forEach(p => {
+    if (p.item_id === choiceId) {
+      product = p;
     }
   });
+  if (product) {
+    console.log(`You have selected Item ID ${product.item_id}: ${product.product_name}.`)
+    promptCustomerForQuantity(product);
+  } else {
+    console.log("Please enter a valid item ID.")
+    promptCustomerForItem(inventory);
+  }
 };
+
 
 // Check to see if the user wants to quit the program
 function checkIfShouldExit(choice) {
-  if (choice.toLowerCase() === "q") {
-    // Log a message and exit the current node process
-    console.log("Goodbye!");
-    process.exit(0);
-  };
+  if (typeof choice == 'string') {
+    if (choice.toLowerCase() === "q") {
+      // Log a message and exit the current node process
+      console.log("Goodbye!");
+      process.exit(0);
+    };
+  }
 };
