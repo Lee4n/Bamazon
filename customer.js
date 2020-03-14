@@ -74,8 +74,8 @@ function promptCustomerForQuantity(product, inventory) {
         promptCustomerForItem(inventory);
       } else {
         makePurchase(product, quantity);
-      }
-    })
+      };
+    });
 };
 
 // Purchase the desired quantity of the desired item
@@ -120,7 +120,7 @@ function checkInventory(choiceId, inventory) {
   } else {
     console.log("Please enter a valid item ID.")
     promptCustomerForItem(inventory);
-  }
+  };
 };
 
 
@@ -132,5 +132,5 @@ function checkIfShouldExit(choice) {
       console.log("Goodbye!");
       process.exit(0);
     };
-  }
+  };
 };

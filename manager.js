@@ -11,15 +11,15 @@ var connection = mysql.createConnection({
   port: 3306,
 
   // Your username
-  user: "root",
+  user: "Lee",
 
   // Your password
-  password: " ",
+  password: "corsair098",
   database: "bamazon"
 });
 
 // Creates the connection with the server and loads the manager menu upon a successful connection
-connection.connect(function(err) {
+connection.connect(function (err) {
   if (err) {
     console.error("error connecting: " + err.stack);
   }
@@ -28,7 +28,7 @@ connection.connect(function(err) {
 
 // Get product data from the database
 function loadManagerMenu() {
-  connection.query("SELECT * FROM products", function(err, res) {
+  connection.query("SELECT * FROM products", function (err, res) {
     if (err) throw err;
 
     // Load the possible manager menu options, pass in the products data
@@ -45,15 +45,24 @@ function loadManagerOptions(products) {
       choices: ["View Products for Sale", "View Low Inventory", "Add to Inventory", "Add New Product", "Quit"],
       message: "What would you like to do?"
     })
-    .then(function(val) {
+    .then(function (val) {
       //TODO: Write your code here
+      console.log(val.choice)
+      switch (val.choice) {
+        case "View Products for Sale":
+        console.table(products)
+        loadManagerMenu();
+        break;
+        case "View Low Inventory":
+          loadLowInventory();
+      };
     });
 }
 
 // Query the DB for low inventory products
 function loadLowInventory() {
   // Selects all of the products that have a quantity of 5 or less
-  connection.query("ENTER-your-quey-here", function(err, res) {
+  connection.query("SELECT * FROM products WHERE stock_quantity <= 5", function (err, res) {
     if (err) throw err;
     // Draw the table in the terminal using the response, load the manager menu
     console.table(res);
@@ -65,17 +74,15 @@ function loadLowInventory() {
 function addToInventory(inventory) {
   console.table(inventory);
   inquirer
-    .prompt([
-      {
-        type: "input",
-        name: "choice",
-        message: "What is the ID of the item you would you like add to?",
-        validate: function(val) {
-          return !isNaN(val);
-        }
+    .prompt([{
+      type: "input",
+      name: "choice",
+      message: "What is the ID of the item you would you like add to?",
+      validate: function (val) {
+        return !isNaN(val);
       }
-    ])
-    .then(function(val) {
+    }])
+    .then(function (val) {
       //TODO: Write your code here
     });
 }
@@ -83,18 +90,16 @@ function addToInventory(inventory) {
 // Ask for the quantity that should be added to the chosen product
 function promptManagerForQuantity(product) {
   inquirer
-    .prompt([
-      {
-        type: "input",
-        name: "quantity",
-        message: "How many would you like to add?",
-        validate: function(val) {
-          return val > 0;
-        }
+    .prompt([{
+      type: "input",
+      name: "quantity",
+      message: "How many would you like to add?",
+      validate: function (val) {
+        return val > 0;
       }
-    ])
-    .then(function(val) {
-    
+    }])
+    .then(function (val) {
+
       //TODO: Write your code here
 
     });
@@ -103,22 +108,21 @@ function promptManagerForQuantity(product) {
 // Adds the specified quantity to the specified product
 function addQuantity(product, quantity) {
   connection.query(
-  
-  //TODO: Write your code here
+
+    //TODO: Write your code here
   );
 }
 
 // Gets all departments, then gets the new product info, then inserts the new product into the db
 function addNewProduct() {
-  getDepartments(function(err, departments) {
+  getDepartments(function (err, departments) {
     getProductInfo(departments).then(insertNewProduct);
   });
 }
 
 // Prompts manager for new product info, then adds new product
 function getProductInfo(departments) {
-  return inquirer.prompt([
-    {
+  return inquirer.prompt([{
       type: "input",
       name: "product_name",
       message: "What is the name of the product you would like to add?"
@@ -133,7 +137,7 @@ function getProductInfo(departments) {
       type: "input",
       name: "price",
       message: "How much does it cost?",
-      validate: function(val) {
+      validate: function (val) {
         return val > 0;
       }
     },
@@ -141,7 +145,7 @@ function getProductInfo(departments) {
       type: "input",
       name: "quantity",
       message: "How many do we have?",
-      validate: function(val) {
+      validate: function (val) {
         return !isNaN(val);
       }
     }
@@ -154,7 +158,7 @@ function insertNewProduct(val) {
 
     //FIXME: ADD YOUE SQL QUERY HERE
 
-    function(err, res) {
+    function (err, res) {
       if (err) throw err;
       console.log(val.product_name + " ADDED TO BAMAZON!\n");
       // When done, re run loadManagerMenu, effectively restarting our app
@@ -165,12 +169,12 @@ function insertNewProduct(val) {
 
 // Gets all of the departments and runs a callback function when done
 function getDepartments(cb) {
-//FIXME:  connection.query(//ADD-YOUE-SQL-QUERY-HERE, cb);
+  //FIXME:  connection.query(//ADD-YOUE-SQL-QUERY-HERE, cb);
 }
 
 // Is passed an array of departments from the db, then returns an array of just the department names
 function getDepartmentNames(departments) {
-  return departments.map(function(department) {
+  return departments.map(function (department) {
     return department.department_name;
   });
 }
