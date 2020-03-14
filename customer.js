@@ -50,28 +50,14 @@ function promptCustomerForItem(inventory) {
       message: 'Please enter the ID number of the product you would like to purchase.\n======================================================================'
     })
     .then(function (answer) {
-      item = answer.item;
-      connection.query(
-        "SELECT * FROM products WHERE ?", {
-          item_id: item,
-        },
-        function (err, res) {
-          if (err) throw err;
-          if (res.length === 0) {
-            console.log("Please enter a valid item ID.")
-            promptCustomerForItem();
-          } else {
-            console.log(`You have selected Item ID ${res[0].item_id}: ${res[0].product_name}.`)
-            promptCustomerForQuantity();
-          }
-
-        }
-      )
+      var productId = answer.item;
+      checkInventory(productId, inventory);
     });
 };
 
 // Prompt the customer for a product quantity
 function promptCustomerForQuantity(product) {
+  prodObject = product[0];
   inquirer
     .prompt({
       name: 'quantity',
@@ -79,31 +65,39 @@ function promptCustomerForQuantity(product) {
       message: 'How many would you like to purchase?\n======================================'
     })
     .then(function (answer) {
-      quantity = answer.quantity;
-      console.log(quantity)
-      connection.query(
-        'SELECT stock_quantity FROM products',
-        function (err, res) {
-          console.log(res[0])
-          if (err) throw err;
-          if (quantity > res[0].stock_quantity) {
-            console.log("ain't got that many")
-          } else {
-            console.log('we got that many')
-          }
-        }
-      )
-    });
+      var quantity = answer.quantity;
+      if (quantity > prodObject.stock_quantity) {
+        console.log(`We apologize for any inconvenience, as there is ${prodObject.stock_quantity} left in stock.`)
+        promptCustomerForQuantity();
+      } else {
+        makePurchase(prodObject, quantity);
+      }
+    })
 };
 
 // Purchase the desired quantity of the desired item
 function makePurchase(product, quantity) {
+  console.log("MADE PURCHASE")
+  console.log(product)
+  connection.query(`UPDATE products
+    SET stock_quantity = stock_quantity - ${quantity} 
+    WHERE item_id = ${product[0].item_id}`)
 
 };
 
 // Check to see if the product the user chose exists in the inventory
 function checkInventory(choiceId, inventory) {
 
+  inventory.forEach(product => {
+    console.log(product)
+    if (product.item_id === choiceId) {
+      console.log(`You have selected Item ID ${product.item_id}: ${product.product_name}.`)
+      promptCustomerForQuantity();
+    } else {
+      console.log("Please enter a valid item ID.")
+      promptCustomerForItem(inventory);
+    }
+  });
 };
 
 // Check to see if the user wants to quit the program
