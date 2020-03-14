@@ -3,6 +3,8 @@ var mysql = require("mysql");
 var inquirer = require("inquirer");
 require("console.table");
 
+var cart = [];
+
 // Initializes the connection variable to sync with a MySQL database
 var connection = mysql.createConnection({
   host: "localhost",
@@ -47,7 +49,7 @@ function promptCustomerForItem(inventory) {
     .prompt({
       name: 'item',
       type: 'input',
-      message: 'Please enter the ID number of the product you would like to purchase.\n======================================================================'
+      message: 'Please enter the ID number of the product you would like to purchase.'
     })
     .then(function (answer) {
       var productId = parseInt(answer.item);
@@ -57,19 +59,19 @@ function promptCustomerForItem(inventory) {
 };
 
 // Prompt the customer for a product quantity
-function promptCustomerForQuantity(product) {
+function promptCustomerForQuantity(product, inventory) {
   inquirer
     .prompt({
       name: 'quantity',
       type: 'input',
-      message: 'How many would you like to purchase?\n======================================'
+      message: 'How many would you like to purchase?'
     })
     .then(function (answer) {
       var quantity = parseInt(answer.quantity);
       checkIfShouldExit(answer.quantity);
       if (quantity > product.stock_quantity) {
         console.log(`We apologize for any inconvenience, as there is ${product.stock_quantity} left in stock.`)
-        promptCustomerForItem(product);
+        promptCustomerForItem(inventory);
       } else {
         makePurchase(product, quantity);
       }
@@ -81,7 +83,24 @@ function makePurchase(product, quantity) {
   connection.query(`UPDATE products
   SET stock_quantity = stock_quantity - ${quantity} 
   WHERE item_id = ${product.item_id}`)
-  console.log(`You purchased ${quantity} of ${product.product_name}.`)
+  cart.push({
+    'item': product,
+    'quantity': quantity
+  });
+  console.log('')
+  console.log('===============RECEIPT===============')
+  console.log('')
+  console.log('')
+  console.log('You Purchased:')
+  var total = 0
+  cart.forEach(x => {
+    total += x.item.price * x.quantity
+    console.log(`\n\t${x.item.product_name} ${x.quantity} x $${x.item.price}.....$${x.item.price * x.quantity}`)
+  })
+  console.log(`\nTotal: $${total}`);
+  console.log('')
+  console.log('===============RECEIPT===============')
+  console.log('')
   loadProducts();
 };
 
@@ -94,8 +113,10 @@ function checkInventory(choiceId, inventory) {
     }
   });
   if (product) {
+    console.log('')
     console.log(`You have selected Item ID ${product.item_id}: ${product.product_name}.`)
-    promptCustomerForQuantity(product);
+    console.log('')
+    promptCustomerForQuantity(product, inventory);
   } else {
     console.log("Please enter a valid item ID.")
     promptCustomerForItem(inventory);
