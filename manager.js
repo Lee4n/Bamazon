@@ -50,11 +50,15 @@ function loadManagerOptions(products) {
       console.log(val.choice)
       switch (val.choice) {
         case "View Products for Sale":
-        console.table(products)
-        loadManagerMenu();
-        break;
+          console.table(products)
+          loadManagerMenu();
+          break;
         case "View Low Inventory":
           loadLowInventory();
+          break;
+        case "Add to Inventory":
+          addToInventory(products);
+          break;
       };
     });
 }
@@ -84,6 +88,13 @@ function addToInventory(inventory) {
     }])
     .then(function (val) {
       //TODO: Write your code here
+      connection.query(`SELECT * FROM products WHERE item_id = ${val.choice}`, function (err, res) {
+        if (err) throw err;
+        console.log("")
+        console.table(res)
+        console.log("")
+        promptManagerForQuantity(res);
+      });
     });
 }
 
@@ -101,17 +112,24 @@ function promptManagerForQuantity(product) {
     .then(function (val) {
 
       //TODO: Write your code here
-
+      addQuantity(product, val);
     });
 }
 
 // Adds the specified quantity to the specified product
 function addQuantity(product, quantity) {
+  var newQuantity = quantity.quantity
+  var itemId = product[0].item_id
   connection.query(
-
     //TODO: Write your code here
+
+    `UPDATE products SET stock_quantity = stock_quantity + ${newQuantity} WHERE item_id = ${itemId}`
   );
-}
+  console.log('================================================\n')
+  console.log(`An amount of ${newQuantity} was successfully added to item ID ${itemId}!\n`)
+  console.log('================================================\n')
+  loadManagerMenu();
+};
 
 // Gets all departments, then gets the new product info, then inserts the new product into the db
 function addNewProduct() {
