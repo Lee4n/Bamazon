@@ -47,19 +47,24 @@ function promptCustomerForItem(inventory) {
     .prompt({
       name: 'item',
       type: 'number',
-      message: 'What would you like to purchase?'
+      message: 'Please enter the ID number of the product you would like to purchase.\n======================================================================'
     })
     .then(function (answer) {
-      console.log(answer.item)
-      item = answer.item
+      item = answer.item;
       connection.query(
-        "SELECT * FROM products WHERE ?",
-        {
-          item_id: item
+        "SELECT * FROM products WHERE ?", {
+          item_id: item,
         },
         function (err, res) {
           if (err) throw err;
-          console.log('this works')
+          if (res.length === 0) {
+            console.log("Please enter a valid item ID.")
+            promptCustomerForItem();
+          } else {
+            console.log(`You have selected Item ID ${res[0].item_id}: ${res[0].product_name}.`)
+            promptCustomerForQuantity();
+          }
+
         }
       )
     });
@@ -67,7 +72,28 @@ function promptCustomerForItem(inventory) {
 
 // Prompt the customer for a product quantity
 function promptCustomerForQuantity(product) {
-
+  inquirer
+    .prompt({
+      name: 'quantity',
+      type: 'number',
+      message: 'How many would you like to purchase?\n======================================'
+    })
+    .then(function (answer) {
+      quantity = answer.quantity;
+      console.log(quantity)
+      connection.query(
+        'SELECT stock_quantity FROM products',
+        function (err, res) {
+          console.log(res[0])
+          if (err) throw err;
+          if (quantity > res[0].stock_quantity) {
+            console.log("ain't got that many")
+          } else {
+            console.log('we got that many')
+          }
+        }
+      )
+    });
 };
 
 // Purchase the desired quantity of the desired item
